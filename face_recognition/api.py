@@ -116,7 +116,9 @@ def face_locations(img, number_of_times_to_upsample=1, model="hog"):
         return [_trim_css_to_bounds(_rect_to_css(face), img.shape) for face in _raw_face_locations(img, number_of_times_to_upsample, model)]
 
 
-def _raw_face_locations_batched(images, number_of_times_to_upsample=1):
+#def _raw_face_locations_batched(images, number_of_times_to_upsample=1):
+def _raw_face_locations_batched(images, number_of_times_to_upsample=50):
+
     """
     Returns an 2d array of dlib rects of human faces in a image using the cnn face detector
 
@@ -127,7 +129,8 @@ def _raw_face_locations_batched(images, number_of_times_to_upsample=1):
     return cnn_face_detector(images, number_of_times_to_upsample)
 
 
-def batch_face_locations(images, number_of_times_to_upsample=1, batch_size=128):
+#def batch_face_locations(images, number_of_times_to_upsample=1, batch_size=128):
+def batch_face_locations(images, number_of_times_to_upsample=50, batch_size=128):
     """
     Returns an 2d array of bounding boxes of human faces in a image using the cnn face detector
     If you are using a GPU, this can give you much faster results since the GPU
@@ -145,7 +148,7 @@ def batch_face_locations(images, number_of_times_to_upsample=1, batch_size=128):
 
     return list(map(convert_cnn_detections_to_css, raw_detections_batched))
 
-
+#def _raw_face_landmarks(face_image, face_locations=None, model="small"):
 def _raw_face_landmarks(face_image, face_locations=None, model="large"):
     if face_locations is None:
         face_locations = _raw_face_locations(face_image)

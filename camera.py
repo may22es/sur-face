@@ -53,7 +53,7 @@ class Camera:
                     print("different with encoding.bin")
                     for idx in range(len(self.file_names)):
                         self.image.append(face_recognition.load_image_file("./images/" + self.file_names[idx]))
-                        self.face_encoding.append(face_recognition.face_encoding(self.image[idx], num_jitters=100)[
+                        self.face_encoding.append(face_recognition.face_encodings(self.image[idx], num_jitters=100)[
                                                       0])  # num_jitters=1 is 100 times faster and worse than 100
                         self.known_faces.append(self.face_encoding[idx])
 
