@@ -2,6 +2,7 @@ import face_recognition
 import cv2
 import os
 import pickle
+import numpy as np
 
 ESC = 27
 
@@ -18,11 +19,15 @@ class Camera:
     frame_color_display = frame_color_known
 
     process_this_frame = True
-    scale = 2
+    scale = 4
+
+    canvas = np.zeros((768, 1524, 3), dtype='uint8')    # height, width
 
     def __init__(self, cam_idx=0):
         self.cap = cv2.VideoCapture(cam_idx)
         self.load_images()
+        self.pos = cv2.imread("resource/pos.jpg")   # 768, 1024
+        self.canvas[0:self.pos.shape[0], 0:self.pos.shape[1]] = self.pos
 
     def __del__(self):
         self.cap.release()
@@ -111,7 +116,9 @@ class Camera:
             # Display the resulting image
             if os.name == "posix":  # linux option
                 frame = cv2.resize(frame, (0, 0), fx=2, fy=2)
-            cv2.imshow('Video', frame)
+            frame = cv2.resize(frame, (500, 400))
+            self.canvas[0:frame.shape[0], self.pos.shape[1]:self.pos.shape[1]+frame.shape[1]] = frame
+            cv2.imshow('Video', self.canvas)
 
             # Hit 'q' or 'ESC' on the keyboard to quit!
             key = cv2.waitKey(1)
