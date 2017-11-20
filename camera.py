@@ -2,7 +2,6 @@ import face_recognition
 import cv2
 import os
 import pickle
-import numpy as np
 
 ESC = 27
 
@@ -13,21 +12,17 @@ class Camera:
     known_faces = []
     faces_name = []
     name = ''
-    file_names = os.listdir("./images/")
+    file_names = os.listdir(".\\images\\")
     frame_color_known = (255, 255, 255)
     frame_color_unknown = (0, 0, 255)
     frame_color_display = frame_color_known
 
     process_this_frame = True
-    scale = 4
-
-    canvas = np.zeros((768, 1524, 3), dtype='uint8')    # height, width
+    scale = 2
 
     def __init__(self, cam_idx=0):
         self.cap = cv2.VideoCapture(cam_idx)
         self.load_images()
-        self.pos = cv2.imread("resource/pos.jpg")   # 768, 1024
-        self.canvas[0:self.pos.shape[0], 0:self.pos.shape[1]] = self.pos
 
     def __del__(self):
         self.cap.release()
@@ -51,16 +46,15 @@ class Camera:
                 p = pickle.load(f)
 
                 # 현재 jpeg file 이름과 encoding에 저장된 file 이름을 비교
-                if self.faces_name == p['faces_name']:
+                if self.faces_name == p['faces_name']: # 왼 : images 파일 내, 오른 : encoding.bin 내
                     print("same with encoding.bin")
                     self.known_faces = p['known_faces']
                 else:
                     print("different with encoding.bin")
-                    for idx in range(len(self.file_names)):
-                        self.image.append(face_recognition.load_image_file("./images/" + self.file_names[idx]))
-                        self.face_encoding.append(face_recognition.face_encodings(self.image[idx], num_jitters=100)[
+                    self.image.append(face_recognition.load_image_file("./images/" + self.file_names[idx]))
+                    self.face_encoding.append(face_recognition.face_encodings(self.image[idx], num_jitters=100)[
                                                       0])  # num_jitters=1 is 100 times faster and worse than 100
-                        self.known_faces.append(self.face_encoding[idx])
+                    self.known_faces.append(self.face_encoding[idx])
 
                     f.truncate()
                     pickle.dump({'faces_name': self.faces_name, 'known_faces': self.known_faces}, f)
@@ -113,12 +107,16 @@ class Camera:
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 cv2.putText(frame, name, (left + 6, bottom - 6), font, 0.5, (0, 0, 0), 1)
 
+                if name == "Unknown":
+                    face = frame[top:bottom, left:right]
+                    face = cv2.resize(face, (10, 10))
+                    face = cv2.resize(face, (right - left,bottom - top), interpolation=cv2.INTER_NEAREST)
+                    frame[top:bottom, left:right] = face
+
             # Display the resulting image
             if os.name == "posix":  # linux option
                 frame = cv2.resize(frame, (0, 0), fx=2, fy=2)
-            frame = cv2.resize(frame, (500, 400))
-            self.canvas[0:frame.shape[0], self.pos.shape[1]:self.pos.shape[1]+frame.shape[1]] = frame
-            cv2.imshow('Video', self.canvas)
+            cv2.imshow('Video', frame)
 
             # Hit 'q' or 'ESC' on the keyboard to quit!
             key = cv2.waitKey(1)
